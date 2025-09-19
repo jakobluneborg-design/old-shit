@@ -1,0 +1,173 @@
+<html>
+  <head>
+    <!--Endrer tittelen til Snake-->
+    <title>Snake</title>
+    <!--Åpner CSS-->
+    <style>
+      /*Lager bakgrunnen og canvas*/
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        background: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      canvas {border: 1px solid green;}
+    </style>
+  </head>
+  <body>
+    <!--Tar canvas ut av CSS-->
+    <canvas id="gameScreen" width="525" height="525"></canvas>
+    <!--Åpner JavaScript-->
+    <script>
+      //Henter canvasen inn i JavaScript
+      let canvas = document.getElementById("gameScreen");
+      let context = canvas.getContext("2d");
+      let gridSize = 15;
+
+      //Lager variabler til bakgrunnen
+      let Screen = {
+        sizeX: 525,
+        sizeY: 525
+      };
+
+      //lager variabler til Frames og FramesPerSecond(FPS)
+      let Frame = 0;
+      let FPS = 10;
+
+      //Gir Snake variabler
+      let Snake = {
+        dir: "Right",
+        Speed: 1,
+        length: 4,
+        cellsX: [60, 45, 30, 15, 0],
+        cellsY: [120, 120, 120, 120, 120]
+      };
+
+      //Gir eplet variabler
+      let Apple = {
+        x: Math.floor(Math.random() * ((Screen.sizeX - gridSize) / gridSize) + 1) * gridSize,
+        y: Math.floor(Math.random() * ((Screen.sizeY - gridSize) / gridSize) + 1) * gridSize
+      };      
+
+      let inputLock = false
+
+      //Starter spill-koden
+      console.log("Script started");
+
+      //En funksjon som spiller en "Frame" av spillet
+      function PlayFrame(gridSize) {
+        inputLock = false
+        Frame += 1;
+        console.log(Frame);
+
+        //Aktiverer hvis du trykker på tastaturet
+        document.addEventListener("keydown", (key) => {
+          //Sjekker om du trykket høyre pil
+          if (!inputLock) {
+            if ((key.code == "ArrowRight") && (Snake.dir != "Left")) {
+            //Endrer direksjon-variablen til høyre
+            Snake.dir = "Right";
+            console.log("SNAKE CHANGED DIR TO RIGHT");
+            inputLock = true
+          }
+          //Sjekker om du trykket venstre pil
+          if ((key.code == "ArrowLeft") && (Snake.dir != "Right")) {
+            //Endrer direksjon-variablen til venstre
+            Snake.dir = "Left";
+            console.log("SNAKE CHANGED DIR TO LEFT");
+            inputLock = true
+          }
+          //Sjekker om du trykket pil opp
+          if ((key.code == "ArrowUp") && (Snake.dir != "Down")) {
+            //Endrer direksjon-variable til opp
+            Snake.dir = "Up";
+            console.log("SNAKE CHANGED DIR TO UP");
+            inputLock = true
+          }
+          //Sjekker om du trykket pil ned
+          if ((key.code == "ArrowDown") && (Snake.dir != "Up")) {
+            //Endrer direksjon-variablen til ned
+            Snake.dir = "Down";
+            console.log("SNAKE CHANGED DIR TO DOWN");
+            inputLock = true
+          }
+          }
+        });
+
+        //Går gjennom Snake "cellene"
+        for (let i = Snake.length - 1; i > 0; i--) {
+          Snake.cellsX[i] = Snake.cellsX[i - 1];
+          Snake.cellsY[i] = Snake.cellsY[i - 1];
+        }
+
+
+        //Endrer posisjonen itl Snake basert på direksjon
+        if (Snake.dir == "Right") {
+          Snake.cellsX[0] += Snake.Speed * gridSize;
+        }
+        if (Snake.dir == "Left") {
+          Snake.cellsX[0] -= Snake.Speed * gridSize;
+        }
+        if (Snake.dir == "Up") {
+          Snake.cellsY[0] -= Snake.Speed * gridSize;
+        }
+        if (Snake.dir == "Down") {
+          Snake.cellsY[0] += Snake.Speed * gridSize;
+        }
+
+        //Sjekker om Snake har truffet en vegg
+        if (Snake.cellsX[0] >= Screen.sizeX || Snake.cellsX[0] < 0 ||
+            Snake.cellsY[0] >= Screen.sizeY || Snake.cellsY[0] < 0) {
+          //Restarter spillet
+          console.log("Player Died");
+          clearInterval(retime);
+          alert("Game Over! Press OK to restart.");
+          location.reload();
+        }
+
+        //Sjekker om Snake har truffet seg selv
+        for (let i = 1; i < Snake.length; i++) {
+          if (Snake.cellsX[0] === Snake.cellsX[i] && Snake.cellsY[0] === Snake.cellsY[i]) {
+            console.log("Player Died");
+            clearInterval(retime);
+            alert("Game Over! Press OK to restart.");
+            location.reload();
+          }
+        }
+        
+
+        //Sletter alt på canvasen og setter fargen tibake til grønn
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = "green";
+
+        //Tegner Snake
+        for (let cell = 0; cell < Snake.length; cell++) {
+          console.log("SNAKE CELL DRAWING");
+          context.fillRect(Snake.cellsX[cell], Snake.cellsY[cell], gridSize-1, gridSize-1);
+        }
+
+        //Tegner eplet
+        context.fillStyle = "red";
+        context.fillRect(Apple.x, Apple.y, gridSize, gridSize);
+    
+        //Sjekker om Snake rører eplet
+        if (Snake.cellsX[0] === Apple.x && Snake.cellsY[0] === Apple.y) {
+          //Spiser eplet
+          console.log("SNAKE ATE APPLE");
+          Snake.length += 1;
+          Apple.x = Math.floor(Math.random() * ((Screen.sizeX - gridSize) / gridSize) + 1) * gridSize;
+          Apple.y = Math.floor(Math.random() * ((Screen.sizeY - gridSize) / gridSize) + 1) * gridSize;
+        }        
+    
+      }
+    
+      //Spiller neste "Frame"
+      let retime = setInterval(() => PlayFrame(gridSize), 1000/FPS);
+
+    </script>
+  </body>
+</html>    
